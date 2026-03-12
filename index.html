@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retro Habit Tracker Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page-wrapper">
+
+    <!-- Top Navigation -->
+    <header class="top-nav">
+      <div class="logo">Habit Tracker</div>
+
+      <nav class="nav-links">
+        <a href="#" class="active">Dashboard</a>
+        <a href="#">My Habits</a>
+        <a href="#">Progress</a>
+        <a href="#">Calendar</a>
+        <a href="#">Settings</a>
+      </nav>
+
+      <div class="profile-pill">VS</div>
+    </header>
+
+    <!-- Main Dashboard -->
+    <main class="dashboard">
+
+      <!-- Hero -->
+      <section class="hero-card">
+        <div>
+          <p class="small-title">COLORFUL PRODUCTIVITY</p>
+          <h1>Retro Habit Dashboard</h1>
+          <p class="hero-text">
+            Track your daily habits, maintain streaks, and stay consistent with a bold retro-inspired interface.
+          </p>
+        </div>
+        <button class="primary-btn">+ Add Habit</button>
+      </section>
+
+      <!-- Stats -->
+      <section class="stats-grid">
+        <div class="stat-card yellow">
+          <h3>Today's Habits</h3>
+          <p>06</p>
+        </div>
+
+        <div class="stat-card pink">
+          <h3>Completed</h3>
+          <p>04</p>
+        </div>
+
+        <div class="stat-card coral">
+          <h3>Current Streak</h3>
+          <p>12 Days</p>
+        </div>
+
+        <div class="stat-card purple">
+          <h3>Completion Rate</h3>
+          <p>78%</p>
+        </div>
+      </section>
+
+      <!-- Main Content -->
+      <section class="main-grid">
+        <div class="panel large-panel">
+          <h2>Today's Habits</h2>
+
+          <div class="habit-item">
+            <span>Drink 2L Water</span>
+            <span class="tag done green">Done</span>
+          </div>
+
+          <div class="habit-item">
+            <span>Morning Exercise</span>
+            <span class="tag done blue">Done</span>
+          </div>
+
+          <div class="habit-item">
+            <span>Read 20 Pages</span>
+            <span class="tag pending pink-tag">Pending</span>
+          </div>
+
+          <div class="habit-item">
+            <span>Meditation</span>
+            <span class="tag pending yellow-tag">Pending</span>
+          </div>
+
+          <div class="habit-item">
+            <span>Sleep Before 11 PM</span>
+            <span class="tag pending coral-tag">Pending</span>
+          </div>
+        </div>
+
+        <div class="panel side-panel">
+          <h2>Weekly Progress</h2>
+
+          <div class="progress-block">
+            <div class="progress-label">
+              <span>Water Intake</span>
+              <span>85%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="fill green-fill" style="width: 85%;"></div>
+            </div>
+          </div>
+
+          <div class="progress-block">
+            <div class="progress-label">
+              <span>Exercise</span>
+              <span>70%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="fill purple-fill" style="width: 70%;"></div>
+            </div>
+          </div>
+
+          <div class="progress-block">
+            <div class="progress-label">
+              <span>Reading</span>
+              <span>60%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="fill blue-fill" style="width: 60%;"></div>
+            </div>
+          </div>
+
+          <div class="progress-block">
+            <div class="progress-label">
+              <span>Meditation</span>
+              <span>50%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="fill coral-fill" style="width: 50%;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bottom Section -->
+      <section class="bottom-grid">
+        <div class="panel">
+          <h2>Recent Activity</h2>
+          <ul class="activity-list">
+            <li>Completed Morning Exercise</li>
+            <li>Logged Water Intake</li>
+            <li>Reached 12-day streak</li>
+            <li>Missed Meditation yesterday</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h2>Motivation</h2>
+          <p class="quote">
+            Success does not come from intensity once in a while. It comes from consistency with style.
+          </p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</body>
+</html>
