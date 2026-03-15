@@ -336,3 +336,50 @@ body {
     font-size: 1.8rem;
   }
 }
+/* form styling */
+
+form {
+  max-width: 700px;
+}
+
+label {
+  display: block;
+  margin-top: 14px;
+  font-weight: 700;
+}
+
+input,
+select,
+textarea {
+  width: 150%;
+  padding: 10px;
+  border: 2px solid var(--black);
+  border-radius: 10px;
+  font-family: 'Montserrat', sans-serif;
+  margin-top: 6px;
+  background: var(--white);
+}
+
+textarea {
+  height: 80px;
+}
+
+.days {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.days label {
+  font-weight: 600;
+}
+
+input[type="checkbox"] {
+  accent-color: var(--purple);
+}
+
+.buttons {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
