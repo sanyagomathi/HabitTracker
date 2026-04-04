@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catalyst | Loading...</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+      /* Using your yellow background variable */
+      background-color: var(--yellow); 
+    }
+
+    .splash-content {
+      text-align: center;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .logo-img {
+      max-width: 250px;
+      height: auto;
+      /* Matching your card style with a thick border/shadow if desired */
+      filter: drop-shadow(8px 8px 0px var(--black));
+    }
+
+    /* Simple entrance and pulse animation */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    /* Fade out transition for the whole screen */
+    .fade-out {
+      opacity: 0;
+      transition: opacity 0.5s ease-out;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="splash-content" id="splash">
+    <img src="75ea0dc6-860f-4bcc-91e9-718c964bddcd-removebg-preview.png" alt="Catalyst Logo" class="logo-img">
+  </div>
+
+  <script>
+    // Wait for 4.5 seconds to start the fade, then redirect at 5 seconds
+    setTimeout(() => {
+      document.body.classList.add('fade-out');
+    }, 4500);
+
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 5000);
+  </script>
+</body>
+</html>
