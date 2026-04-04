@@ -9,18 +9,20 @@
 
 <div class="page-wrapper">
 
-    <!-- Top nav (same as dashboard) -->
-    <div class="top-nav">
-        <div class="logo">Habit Tracker</div>
+    <!-- Top Navigation -->
+    <header class="top-nav">
+      <div class="logo">Catalyst</div>
 
-        <div class="nav-links">
-            <a href="/index.html">Dashboard</a>
-            <a href="#">Habits</a>
-            <a href="#" class="active">Add Habit</a>
-        </div>
+      <nav class="nav-links">
+        <a href="index.html">Dashboard</a>
+        <a href="my-habits.html" class="active">My Habits</a>
+        <a href="#">Progress</a>
+        <a href="#">Calendar</a>
+        <a href="#">Settings</a>
+      </nav>
 
-        <div class="profile-pill">A</div>
-    </div>
+      <div class="profile-pill"><a href="Profile.html">AD</a></div>
+    </header>
 
 
     <!-- Panel like dashboard -->
@@ -28,7 +30,7 @@
 
         <h2>Add New Habit</h2>
 
-        <form>
+        <form id="add-habit-form">
 
             <label>NAME OF THE HABIT</label>
             <input type="text" placeholder="Enter habit name">
@@ -76,7 +78,7 @@
         </form>
 
         <div class="buttons">
-            <button class="primary-btn" a href="/index.html">Save Habit</button>
+            <button class="primary-btn" ><a href="/index.html">Save Habit</a></button>
             <button class="primary-btn">Reset</button>
         </div>
 

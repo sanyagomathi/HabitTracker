@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Habits</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page-wrapper">
+
+    <!-- Top Navigation -->
+    <header class="top-nav">
+      <div class="logo">Catalyst</div>
+
+      <nav class="nav-links">
+        <a href="index.html">Dashboard</a>
+        <a href="my-habit.html" class="active">My Habits</a>
+        <a href="#">Progress</a>
+        <a href="#">Calendar</a>
+        <a href="#">Settings</a>
+      </nav>
+
+      <div class="profile-pill"><a href="Profile.html">AD</a></div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard">
+
+      <!-- Hero -->
+      <section class="hero-card">
+        <div>
+          <p class="small-title">YOUR ROUTINE, ORGANIZED</p>
+          <h1>My Habits</h1>
+          <p class="hero-text">
+            View, manage, and stay on top of the habits that build your daily consistency.
+          </p>
+        </div>
+        <button class="primary-btn"><a href="new-habit.html">Add Habit</a></button>
+      </section>
+
+      <!-- Habit Categories -->
+      <section class="main-grid">
+        <div class="panel large-panel">
+          <h2>Daily Habits</h2>
+
+          <ul class="activity-list">
+            <li class="habit-item">
+              <span>Drink 2L Water</span>
+              <span class="tag green">Daily</span>
+            </li>
+            <li class="habit-item">
+              <span>Morning Exercise</span>
+              <span class="tag blue">Daily</span>
+            </li>
+            <li class="habit-item">
+              <span>Read 20 Pages</span>
+              <span class="tag pink-tag">Daily</span>
+            </li>
+            <li class="habit-item">
+              <span>Meditation</span>
+              <span class="tag yellow-tag">Daily</span>
+            </li>
+            <li class="habit-item">
+              <span>Sleep Before 11 PM</span>
+              <span class="tag coral-tag">Daily</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="panel side-panel">
+          <h2>Habit Summary</h2>
+
+          <div class="progress-block">
+            <div class="progress-label">
+              <span>Total Habits</span>
+              <span>8</span>
+            </div>
+            <div class="progress-bar">
+              <div class="fill purple-fill" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <div class="progress-block">
+            <div class="progress-label">
+              <span>Daily Habits</span>
+              <span>5</span>
+            </div>
+            <div class="progress-bar">
+              <div class="fill green-fill" style="width: 62%;"></div>
+            </div>
+          </div>
+
+          <div class="progress-block">
+            <div class="progress-label">
+              <span>Weekly Habits</span>
+              <span>2</span>
+            </div>
+            <div class="progress-bar">
+              <div class="fill blue-fill" style="width: 25%;"></div>
+            </div>
+          </div>
+
+          <div class="progress-block">
+            <div class="progress-label">
+              <span>Monthly Habits</span>
+              <span>1</span>
+            </div>
+            <div class="progress-bar">
+              <div class="fill coral-fill" style="width: 13%;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- More Lists -->
+      <section class="bottom-grid">
+        <div class="panel">
+          <h2>Weekly Habits</h2>
+          <ul class="activity-list">
+            <li>Plan the week every Sunday</li>
+            <li>Clean workspace</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h2>Monthly Habits</h2>
+          <ul class="activity-list">
+            <li>Review goals and progress</li>
+          </ul>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</body>
+</html>
