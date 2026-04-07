@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meditation Habit</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+  :root {
+    --black: #1a1a1a;
+    --green: #4caf50;
+    --panel-bg: #fff;
+    --yellow: #fff176;
+    --purple: #b39ddb;
+    --pink: #f48fb1;
+    --coral: #ff8a65;
+    --teal: #80cbc4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: #f5f5f5;
+    padding: 20px;
+    color: var(--black);
+  }
+
+  .page-wrapper {
+    max-width: 880px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* PANEL */
+  .panel {
+    background: var(--panel-bg);
+    border: 3px solid var(--black);
+    box-shadow: 6px 6px 0 var(--black);
+    border-radius: 14px;
+    padding: 20px;
+  }
+
+  h1 { font-size: 24px; font-weight: 900; }
+  h2 { font-size: 18px; font-weight: 800; margin-bottom: 14px; }
+  h3 { font-size: 15px; font-weight: 700; }
+
+  /* STATS */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+  }
+
+  .stat-card {
+    border: 3px solid var(--black);
+    box-shadow: 4px 4px 0 var(--black);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .stat-card h3 { font-size: 12px; font-weight: 700; opacity: 0.65; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-card p  { font-size: 28px; font-weight: 900; }
+
+  .yellow { background: var(--yellow); }
+  .purple { background: var(--purple); }
+  .pink   { background: var(--pink); }
+  .coral  { background: var(--coral); }
+  .teal   { background: var(--teal); }
+
+  /* BUTTON */
+  .primary-btn {
+    background: var(--black);
+    color: white;
+    border: 3px solid var(--black);
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 #555;
+    transition: transform 0.1s, box-shadow 0.1s;
+    margin-top: 10px;
+    font-family: inherit;
+  }
+  .primary-btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #555; }
+  .primary-btn:hover  { background: #333; }
+
+  /* FORM */
+  label {
+    display: block;
+    font-weight: 700;
+    font-size: 13px;
+    margin-top: 14px;
+    margin-bottom: 5px;
+  }
+  input[type="number"], select, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid var(--black);
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: inherit;
+    background: white;
+  }
+  textarea { height: 80px; resize: vertical; }
+  input[type="number"]:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--teal);
+    box-shadow: 3px 3px 0 var(--teal);
+  }
+
+  /* CALENDAR */
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .calendar-header button {
+    background: white;
+    border: 2px solid var(--black);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-weight: 800;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .calendar-header button:hover { background: #f0f0f0; }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+  .day-name {
+    font-weight: 800;
+    text-align: center;
+    font-size: 11px;
+    padding: 4px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .day-box {
+    background: white;
+    border: 2px solid var(--black);
+    padding: 10px 4px;
+    text-align: center;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    min-height: 36px;
+  }
+  .done { background: var(--green); color: white; border-color: #388e3c; }
+  .today { border-color: var(--teal); border-width: 3px; }
+
+  /* POPUP */
+  .popup {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+  }
+  .popup-box {
+    background: var(--panel-bg);
+    padding: 24px;
+    border: 3px solid var(--black);
+    box-shadow: 6px 6px 0 var(--black);
+    border-radius: 14px;
+    min-width: 280px;
+  }
+  .popup-box h3 { margin-bottom: 12px; font-size: 16px; }
+
+  /* BREATHING */
+  .breathe-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 0;
+  }
+  #breathe-circle {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: var(--teal);
+    border: 4px solid var(--black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 15px;
+    transition: transform 1.6s ease-in-out, background 1.6s;
+    cursor: pointer;
+    user-select: none;
+  }
+  #breathe-label { font-size: 19px; font-weight: 800; }
+  #breathe-count { font-size: 13px; color: #777; font-weight: 600; }
+  #breathe-btn {
+    background: var(--teal);
+    color: var(--black);
+    border: 3px solid var(--black);
+    border-radius: 10px;
+    padding: 10px 26px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 var(--black);
+    font-family: inherit;
+  }
+  #breathe-btn:hover { opacity: 0.85; }
+
+  /* MOOD */
+  .mood-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .mood-btn {
+    border: 2px solid var(--black);
+    background: white;
+    border-radius: 20px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, color 0.15s;
+  }
+  .mood-btn:hover { background: #f0f0f0; }
+  .mood-btn.selected { background: var(--black); color: white; }
+
+  /* STREAK ROW */
+  .btn-row { display: flex; gap: 12px; align-items: center; }
+</style>
+</head>
+
+<body>
+<div class="page-wrapper">
+
+  <!-- HEADER -->
+  <div class="panel">
+    <h1>🧘 Meditation Dashboard</h1>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card yellow"><h3>Today's Session</h3><p id="todayTime">0 min</p></div>
+    <div class="stat-card purple"><h3>Daily Target</h3><p id="targetTime">10 min</p></div>
+    <div class="stat-card pink"><h3>Status</h3><p id="statusText">—</p></div>
+    <div class="stat-card coral"><h3>Streak</h3><p id="streak">5 days</p></div>
+    <div class="stat-card teal"><h3>Sessions / Month</h3><p id="monthCount">8</p></div>
+  </div>
+
+  <!-- CHANGE TARGET -->
+  <div class="panel">
+    <button class="primary-btn" onclick="openPopup()">Change Target</button>
+  </div>
+
+  <!-- GUIDED BREATHING -->
+  <div class="panel">
+    <h2>Guided Breathing</h2>
+    <div class="breathe-section">
+      <div id="breathe-circle">Press Start</div>
+      <div id="breathe-label">4 – 2 – 6 Method</div>
+      <div id="breathe-count">0 breaths completed</div>
+      <button id="breathe-btn" onclick="toggleBreath()">Start</button>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="panel">
+    <h2>Calendar</h2>
+    <div class="calendar-header">
+      <button onclick="prevMonth()">⬅</button>
+      <h3 id="monthYear"></h3>
+      <button onclick="nextMonth()">➡</button>
+    </div>
+    <div class="calendar-grid" id="calendar"></div>
+  </div>
+
+  <!-- DAILY ENTRY -->
+  <div class="panel">
+    <h2>Daily Entry</h2>
+
+    <label>Session Duration (min)</label>
+    <input type="number" id="timeInput" min="1" placeholder="e.g. 10">
+
+    <label>Session Type</label>
+    <select id="usage">
+      <option>Breathwork</option>
+      <option>Body Scan</option>
+      <option>Mindfulness</option>
+      <option>Visualization</option>
+      <option>Loving Kindness</option>
+      <option>Sleep Meditation</option>
+    </select>
+
+    <label>Mood Before</label>
+    <div class="mood-row" id="moodBefore">
+      <button class="mood-btn" onclick="selectMood('before',this)">😣 Anxious</button>
+      <button class="mood-btn" onclick="selectMood('before',this)">😴 Tired</button>
+      <button class="mood-btn" onclick="selectMood('before',this)">😐 Neutral</button>
+      <button class="mood-btn" onclick="selectMood('before',this)">😊 Calm</button>
+      <button class="mood-btn" onclick="selectMood('before',this)">🎯 Focused</button>
+    </div>
+
+    <label>Mood After</label>
+    <div class="mood-row" id="moodAfter">
+      <button class="mood-btn" onclick="selectMood('after',this)">😣 Anxious</button>
+      <button class="mood-btn" onclick="selectMood('after',this)">😴 Tired</button>
+      <button class="mood-btn" onclick="selectMood('after',this)">😐 Neutral</button>
+      <button class="mood-btn" onclick="selectMood('after',this)">😊 Calm</button>
+      <button class="mood-btn" onclick="selectMood('after',this)">🎯 Focused</button>
+    </div>
+
+    <label>Reflection</label>
+    <textarea id="reflection" placeholder="How did your session feel today?"></textarea>
+
+    <button class="primary-btn" onclick="saveDay()">Save Session</button>
+  </div>
+
+  <!-- GRAPH -->
+  <div class="panel">
+    <h2>Monthly Trend</h2>
+    <canvas id="myChart"></canvas>
+  </div>
+
+</div>
+
+<!-- POPUP -->
+<div class="popup" id="popup">
+  <div class="popup-box">
+    <h3>Set Daily Target (min)</h3>
+    <input type="number" id="newTarget" min="1" placeholder="e.g. 10">
+    <br>
+    <button class="primary-btn" onclick="saveTarget()">Save</button>
+    <button class="primary-btn" style="background:#999;box-shadow:4px 4px 0 #666;margin-left:8px;" onclick="closePopup()">Cancel</button>
+  </div>
+</div>
+
+<script>
+  // STATE
+  let target = 10;
+  let completedDays = [1, 3, 5, 7, 10, 12, 14, 18, 22];
+  let currentDate = new Date();
+  let todayDate = new Date().getDate();
+  let todayMonth = new Date().getMonth();
+  let todayYear = new Date().getFullYear();
+
+  // POPUP
+  function openPopup()  { document.getElementById("popup").style.display = "flex"; }
+  function closePopup() { document.getElementById("popup").style.display = "none"; }
+
+  function saveTarget() {
+    let v = parseInt(document.getElementById("newTarget").value);
+    if (!v || v < 1) { alert("Enter a valid number"); return; }
+    target = v;
+    document.getElementById("targetTime").innerText = target + " min";
+    closePopup();
+    updateStatus(parseInt(document.getElementById("todayTime").innerText) || 0);
+  }
+
+  // MOOD
+  function selectMood(type, btn) {
+    let id = type === "before" ? "moodBefore" : "moodAfter";
+    document.querySelectorAll("#" + id + " .mood-btn").forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+  }
+
+  // SAVE
+  function saveDay() {
+    let time = parseInt(document.getElementById("timeInput").value);
+    if (!time || time < 1) { alert("Enter a valid session duration"); return; }
+    document.getElementById("todayTime").innerText = time + " min";
+    updateStatus(time);
+    if (time >= target && !completedDays.includes(todayDate)) {
+      completedDays.push(todayDate);
+    }
+    let mc = parseInt(document.getElementById("monthCount").innerText) || 0;
+    document.getElementById("monthCount").innerText = mc + 1;
+    renderCalendar();
+  }
+
+  function updateStatus(time) {
+    if (time === 0) { document.getElementById("statusText").innerText = "—"; return; }
+    document.getElementById("statusText").innerText = time >= target ? "Done! ✓" : "Partial";
+  }
+
+  // CALENDAR
+  function renderCalendar() {
+    const cal = document.getElementById("calendar");
+    cal.innerHTML = "";
+    const month = currentDate.getMonth();
+    const year  = currentDate.getFullYear();
+    document.getElementById("monthYear").innerText =
+      currentDate.toLocaleString("default", { month: "long" }) + " " + year;
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month + 1, 0).getDate();
+
+    ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(d => {
+      let div = document.createElement("div");
+      div.className = "day-name"; div.innerText = d; cal.appendChild(div);
+    });
+
+    for (let i = 0; i < firstDay; i++) cal.appendChild(document.createElement("div"));
+
+    for (let i = 1; i <= lastDate; i++) {
+      let box = document.createElement("div");
+      box.classList.add("day-box");
+      box.innerText = i;
+      if (completedDays.includes(i) && month === todayMonth && year === todayYear) box.classList.add("done");
+      if (i === todayDate && month === todayMonth && year === todayYear) box.classList.add("today");
+      cal.appendChild(box);
+    }
+  }
+
+  function prevMonth() { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); }
+  function nextMonth() { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); }
+
+  renderCalendar();
+
+  // CHART
+  const ctx = document.getElementById("myChart");
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: ["Week 1","Week 2","Week 3","Week 4"],
+      datasets: [
+        {
+          label: "Avg Session (min)",
+          data: [7, 10, 9, 14],
+          tension: 0.4,
+          borderColor: "#4db6ac",
+          backgroundColor: "rgba(77,182,172,0.15)",
+          fill: true,
+          pointRadius: 5,
+          pointBackgroundColor: "#4db6ac"
+        },
+        {
+          label: "Target",
+          data: [10, 10, 10, 10],
+          tension: 0,
+          borderColor: "#f48fb1",
+          borderDash: [6, 4],
+          pointRadius: 0,
+          borderWidth: 2,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: "bottom" }
+      },
+      scales: {
+        y: { beginAtZero: true, grid: { color: "rgba(0,0,0,0.05)" } }
+      }
+    }
+  });
+
+  // BREATHING WIDGET
+  let running = false;
+  let phaseIndex = 0;
+  let breathCycles = 0;
+  let breathTimer = null;
+
+  const phases = [
+    { label: "Inhale",  duration: 4000, scale: 1.5,  bg: "#80cbc4" },
+    { label: "Hold",    duration: 2000, scale: 1.5,  bg: "#b39ddb" },
+    { label: "Exhale",  duration: 6000, scale: 1.0,  bg: "#f48fb1" },
+  ];
+
+  const circle = document.getElementById("breathe-circle");
+  const blabel = document.getElementById("breathe-label");
+  const bcount = document.getElementById("breathe-count");
+  const bbtn   = document.getElementById("breathe-btn");
+
+  function runPhase() {
+    if (!running) return;
+    const p = phases[phaseIndex];
+    blabel.innerText = p.label + "...";
+    circle.innerText = p.label;
+    circle.style.transform = "scale(" + p.scale + ")";
+    circle.style.background  = p.bg;
+    breathTimer = setTimeout(() => {
+      phaseIndex = (phaseIndex + 1) % phases.length;
+      if (phaseIndex === 0) {
+        breathCycles++;
+        bcount.innerText = breathCycles + " breath" + (breathCycles !== 1 ? "s" : "") + " completed";
+      }
+      runPhase();
+    }, p.duration);
+  }
+
+  function toggleBreath() {
+    if (!running) {
+      running = true;
+      bbtn.innerText = "Stop";
+      phaseIndex = 0;
+      runPhase();
+    } else {
+      running = false;
+      clearTimeout(breathTimer);
+      bbtn.innerText = "Start";
+      blabel.innerText = "4 – 2 – 6 Method";
+      circle.innerText = "Press Start";
+      circle.style.transform = "scale(1)";
+      circle.style.background = "#80cbc4";
+    }
+  }
+
+  // Close popup on overlay click
+  document.getElementById("popup").addEventListener("click", function(e) {
+    if (e.target === this) closePopup();
+  });
+</script>
+</body>
+</html>
