@@ -9,12 +9,16 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-
+body{
+  background-color: var(--pink);
+}
 /* FIX WIDTH ISSUE */
 .stats-grid {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
-
+.page-wrapper> * {
+  margin: 20px 0px;
+}
 /* CALENDAR */
 .calendar-header{
   display:flex;
@@ -66,13 +70,29 @@
   box-shadow:6px 6px 0 var(--black);
 }
 
+input, select, textarea{
+width: 100%;
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="page-wrapper">
+<header class="top-nav">
+      <div class="logo">Catalyst</div>
 
+      <nav class="nav-links">
+        <a href="index.html">Dashboard</a>
+        <a href="my-habits.html" class="active">My Habits</a>
+        <a href="#">Progress</a>
+        <a href="#">Calendar</a>
+        <a href="#">Settings</a>
+      </nav>
+
+      <div class="profile-pill"><a href="Profile.html">AD</a></div>
+</header>
 <div class="panel">
 <h1>Digital Wellness Dashboard</h1>
 </div>
@@ -149,7 +169,6 @@
 
 </div>
 
-<!-- POPUP -->
 <div class="popup" id="popup">
 <div class="popup-box">
 <h3>Set Target</h3>
