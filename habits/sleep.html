@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sleep Health</title>
+<link rel="icon" href="../icon.png" type="image/png">
+<link rel="stylesheet" href="../style.css">
+
+<style>
+body{
+  background-color: var(--blue);
+}
+
+.stats-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.page-wrapper > * {
+  margin: 20px 0px;
+}
+
+.calendar-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.calendar-grid{
+  display:grid;
+  grid-template-columns: repeat(7,1fr);
+  gap:8px;
+}
+
+.day-name{
+  font-weight:800;
+  text-align:center;
+}
+
+.day-box{
+  background:white;
+  border:2px solid var(--black);
+  padding:12px;
+  text-align:center;
+  border-radius:10px;
+  font-weight:700;
+}
+
+.done{
+  background:var(--green);
+  color:white;
+}
+
+.popup{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,0.5);
+}
+
+.popup-box{
+  background:var(--panel-bg);
+  padding:20px;
+  border:3px solid var(--black);
+  box-shadow:6px 6px 0 var(--black);
+}
+
+input, select, textarea{
+  width:100%;
+}
+</style>
+</head>
+
+<body>
+<div class="page-wrapper">
+  <header class="top-nav">
+    <div class="logo">Catalyst</div>
+
+    <nav class="nav-links">
+      <a href="../index.html">Dashboard</a>
+      <a href="../my-habit.html" class="active">My Habits</a>
+      <a href="#">Progress</a>
+      <a href="#">Calendar</a>
+      <a href="#">Settings</a>
+    </nav>
+
+    <div class="profile-pill"><a href="../Profile.html">AD</a></div>
+  </header>
+
+  <div class="panel">
+    <h1 id="targetHeader">Sleep Before 11 PM</h1>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card yellow">
+      <h3>Today's Sleep Time</h3>
+      <p id="todaySleep">11:20 PM</p>
+    </div>
+
+    <div class="stat-card purple">
+      <h3>Target Bedtime</h3>
+      <p id="targetTime">10:30 PM</p>
+    </div>
+
+    <div class="stat-card pink">
+      <h3>Status</h3>
+      <p id="statusText">Late</p>
+    </div>
+
+    <div class="stat-card coral">
+      <h3>Streak</h3>
+      <p id="streak">8 days</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <button class="primary-btn" onclick="openPopup()">Change Target</button>
+  </div>
+
+  <div class="panel">
+    <h2>Calendar</h2>
+
+    <div class="calendar-header">
+      <button onclick="prevMonth()">⬅</button>
+      <h3 id="monthYear"></h3>
+      <button onclick="nextMonth()">➡</button>
+    </div>
+
+    <div class="calendar-grid" id="calendar"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Daily Entry</h2>
+
+    <label>What time did you sleep?</label>
+    <input type="time" id="sleepInput">
+
+    <label>Night Routine Quality</label>
+    <select id="routineQuality">
+      <option>Excellent</option>
+      <option>Good</option>
+      <option>Okay</option>
+      <option>Poor</option>
+    </select>
+
+    <label>Reflection</label>
+    <textarea id="reflection" placeholder="What helped or delayed your sleep?"></textarea>
+
+    <button class="primary-btn" onclick="saveDay()">Save Day</button>
+  </div>
+
+  <div class="panel">
+    <h2>Monthly Trend</h2>
+    <canvas id="myChart"></canvas>
+  </div>
+</div>
+
+<div class="popup" id="popup">
+  <div class="popup-box">
+    <h3>Set Your X PM Target</h3>
+    <input type="time" id="newTarget" value="22:30">
+    <br><br>
+    <button class="primary-btn" onclick="saveTarget()">Save</button>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="../script.js"></script>
+
+</body>
+</html>
