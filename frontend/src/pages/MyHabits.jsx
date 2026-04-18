@@ -30,9 +30,11 @@ export default function MyHabits() {
                   <span className="tag green">Daily</span>
                 </Link>
               </li>
-              <li className="habit-item">
-                <span>Morning Exercise</span>
-                <span className="tag blue">Daily</span>
+              <li>
+                <Link to="/habits/workspace" className="habit-item habit-link-item">
+                  <span>Organize Workspace</span>
+                  <span className="tag yellow-tag">Daily</span>
+                </Link>
               </li>
               <li className="habit-item">
                 <span>Read 20 Pages</span>
@@ -50,6 +52,12 @@ export default function MyHabits() {
                   <span className="tag coral-tag">Daily</span>
                 </Link>
               </li>
+                <li>
+                  <Link to="/habits/expenses" className="habit-item habit-link-item">
+                    <span>Track Expenses</span>
+                    <span className="tag blue">Daily</span>
+                  </Link>
+                </li>
             </ul>
           </div>
 

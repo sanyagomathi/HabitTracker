@@ -1,7 +1,69 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 
 export default function NewHabit() {
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    title: "",
+    category: "Health",
+    frequency: "Once a day",
+    target: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      category: "Health",
+      frequency: "Once a day",
+      target: "",
+    });
+  };
+
+  const saveHabit = async () => {
+    if (!formData.title.trim()) {
+      alert("Please enter a habit name");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:5001/api/habits", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: 1,
+          title: formData.title,
+          category: formData.category,
+          frequency: formData.frequency,
+          target: formData.target,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Failed to save habit");
+        return;
+      }
+
+      alert("Habit saved successfully");
+      navigate("/my-habits");
+    } catch (error) {
+      console.error("Error saving habit:", error);
+      alert("Server error while saving habit");
+    }
+  };
+
   return (
     <div className="page-wrapper">
       <Navbar />
@@ -9,50 +71,53 @@ export default function NewHabit() {
       <div className="panel">
         <h2>Add New Habit</h2>
 
-        <form id="add-habit-form">
-          <label>NAME OF THE HABIT</label>
-          <input type="text" placeholder="Enter habit name" />
+        <label>NAME OF THE HABIT</label>
+        <input
+          type="text"
+          name="title"
+          value={formData.title}
+          onChange={handleChange}
+          placeholder="Enter habit name"
+        />
 
-          <label>CHOOSE YOUR CATEGORY</label>
-          <select>
-            <option>Health</option>
-            <option>Study</option>
-            <option>Fitness</option>
-            <option>Personal</option>
-            <option>Recreational</option>
-          </select>
+        <label>CHOOSE YOUR CATEGORY</label>
+        <select
+          name="category"
+          value={formData.category}
+          onChange={handleChange}
+        >
+          <option>Health</option>
+          <option>Study</option>
+          <option>Fitness</option>
+          <option>Personal</option>
+          <option>Recreational</option>
+        </select>
 
-          <label>DAYS</label>
+        <label>FREQUENCY</label>
+        <select
+          name="frequency"
+          value={formData.frequency}
+          onChange={handleChange}
+        >
+          <option>Once a day</option>
+          <option>Twice a day</option>
+          <option>Thrice a day</option>
+        </select>
 
-          <div className="days">
-            <label><input type="checkbox" /> Mon</label>
-            <label><input type="checkbox" /> Tue</label>
-            <label><input type="checkbox" /> Wed</label>
-            <label><input type="checkbox" /> Thu</label>
-            <label><input type="checkbox" /> Fri</label>
-            <label><input type="checkbox" /> Sat</label>
-            <label><input type="checkbox" /> Sun</label>
-          </div>
-
-          <label>FREQUENCY</label>
-          <select>
-            <option>Once a day</option>
-            <option>Twice a day</option>
-            <option>Thrice a day</option>
-          </select>
-
-          <label>NOTES</label>
-          <textarea placeholder="Some extra you want to add"></textarea>
-
-          <label>TARGET</label>
-          <input type="text" placeholder="Enter target" />
-        </form>
+        <label>TARGET</label>
+        <input
+          type="text"
+          name="target"
+          value={formData.target}
+          onChange={handleChange}
+          placeholder="Enter target"
+        />
 
         <div className="buttons">
-          <Link to="/dashboard" className="primary-btn">
+          <button className="primary-btn" type="button" onClick={saveHabit}>
             Save Habit
-          </Link>
-          <button className="primary-btn" type="button">
+          </button>
+          <button className="primary-btn" type="button" onClick={resetForm}>
             Reset
           </button>
         </div>

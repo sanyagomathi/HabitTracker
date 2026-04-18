@@ -16,9 +16,15 @@ export default function Navbar() {
         <Link to="/my-habits" className={isActive("/my-habits")}>
           My Habits
         </Link>
-        <a href="#">Progress</a>
-        <a href="#">Calendar</a>
-        <a href="#">Settings</a>
+        <Link to="/progress" className={isActive("/progress")}>
+          Progress
+        </Link>
+        <Link to="/calendar" className={isActive("/calendar")}>
+          Calendar
+        </Link>
+        <Link to="/settings" className={isActive("/settings")}>
+            Settings
+            </Link>
       </nav>
 
       <div className="profile-pill">

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
+import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
   const [showAvatar, setShowAvatar] = useState(false);
@@ -7,7 +8,7 @@ export default function Profile() {
   const [avatar, setAvatar] = useState({ hair: "", clothes: "", hats: "" });
   const [newPass, setNewPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
-
+    const navigate = useNavigate();
   const handleAvatarSelect = (type, value) => {
     setAvatar((prev) => ({ ...prev, [type]: value }));
   };
@@ -36,16 +37,6 @@ export default function Profile() {
   return (
     <div className="page-wrapper">
       <Navbar />
-
-      <div className="panel">
-        <h1 className="profile-title">Profile</h1>
-
-        <div className="profile-tags">
-          <div className="tag pink-tag">Dashboard</div>
-          <div className="tag yellow-tag">Gold Badge</div>
-          <div className="tag coral-tag">Streak: 12 Days</div>
-        </div>
-      </div>
 
       <div className="panel">
         <h2>User Profile</h2>
@@ -91,8 +82,13 @@ export default function Profile() {
         <h2>Account Actions</h2>
         <div className="buttons">
           <button className="primary-btn">Logout</button>
-          <button className="primary-btn delete-btn">Delete Account</button>
-        </div>
+            <button
+            className="primary-btn delete-btn"
+            onClick={() => navigate("/delete-account")}
+            >
+            Delete Account
+            </button>
+     </div>
       </div>
 
       {showAvatar && (
