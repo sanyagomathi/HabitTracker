@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 5000;
 function send(res, status, data) {
   res.writeHead(status, {
     "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "http://localhost:5173",
+    "Access-Control-Allow-Origin": "http://localhost:5174",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
   });
@@ -184,6 +184,29 @@ const server = http.createServer(async (req, res) => {
     );
     return;
   }
+
+  if (req.method === "GET" && path.startsWith("/api/habits/")) {
+  const id = path.split("/").pop();
+
+  db.query(
+    "SELECT * FROM habits WHERE id = ?",
+    [id],
+    (err, result) => {
+      if (err) {
+        send(res, 500, { error: "Database error" });
+        return;
+      }
+
+      if (result.length === 0) {
+        send(res, 404, { error: "Habit not found" });
+        return;
+      }
+
+      send(res, 200, result[0]);
+    }
+  );
+  return;
+}
 
   /* ---------- NOT FOUND ---------- */
   send(res, 404, { error: "Route not found" });

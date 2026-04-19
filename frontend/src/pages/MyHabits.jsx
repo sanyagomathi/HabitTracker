@@ -1,7 +1,23 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 
 export default function MyHabits() {
+  const [habits, setHabits] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:5001/api/habits")
+      .then((res) => res.json())
+      .then((data) => setHabits(data))
+      .catch((err) => console.error("Error fetching habits:", err));
+  }, []);
+
+  // counts for summary
+  const totalHabits = habits.length;
+  const dailyHabits = habits.filter(h => h.frequency === "Daily").length;
+  const weeklyHabits = habits.filter(h => h.frequency === "Weekly").length;
+  const monthlyHabits = habits.filter(h => h.frequency === "Monthly").length;
+
   return (
     <div className="page-wrapper">
       <Navbar />
@@ -24,40 +40,22 @@ export default function MyHabits() {
           <div className="panel large-panel">
             <h2>Daily Habits</h2>
             <ul className="activity-list">
-              <li>
-                <Link to="/habits/screentime" className="habit-item habit-link-item">
-                  <span>Screentime</span>
-                  <span className="tag green">Daily</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/habits/workspace" className="habit-item habit-link-item">
-                  <span>Organize Workspace</span>
-                  <span className="tag yellow-tag">Daily</span>
-                </Link>
-              </li>
-              <li className="habit-item">
-                <span>Read 20 Pages</span>
-                <span className="tag pink-tag">Daily</span>
-              </li>
-              <li>
-                <Link to="/habits/meditation" className="habit-item habit-link-item">
-                  <span>Meditation</span>
-                  <span className="tag yellow-tag">Daily</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/habits/sleep" className="habit-item habit-link-item">
-                  <span>Sleep Before 11 PM</span>
-                  <span className="tag coral-tag">Daily</span>
-                </Link>
-              </li>
-                <li>
-                  <Link to="/habits/expenses" className="habit-item habit-link-item">
-                    <span>Track Expenses</span>
-                    <span className="tag blue">Daily</span>
+
+              {habits.length === 0 ? (
+                <li>No habits added yet.</li>
+              ) : (
+                habits.map((habit) => (
+                <li key={habit.id}>
+                  <Link to={`/habits/${habit.id}`} className="habit-item habit-link-item">
+                    <span>{habit.title}</span>
+                    <span className="tag green">
+                      {habit.frequency || "Daily"}
+                    </span>
                   </Link>
                 </li>
+                ))
+              )}
+
             </ul>
           </div>
 
@@ -67,7 +65,7 @@ export default function MyHabits() {
             <div className="progress-block">
               <div className="progress-label">
                 <span>Total Habits</span>
-                <span>8</span>
+                <span>{totalHabits}</span>
               </div>
               <div className="progress-bar">
                 <div className="fill purple-fill" style={{ width: "100%" }}></div>
@@ -77,30 +75,30 @@ export default function MyHabits() {
             <div className="progress-block">
               <div className="progress-label">
                 <span>Daily Habits</span>
-                <span>5</span>
+                <span>{dailyHabits}</span>
               </div>
               <div className="progress-bar">
-                <div className="fill green-fill" style={{ width: "62%" }}></div>
+                <div className="fill green-fill" style={{ width: `${(dailyHabits/totalHabits)*100 || 0}%` }}></div>
               </div>
             </div>
 
             <div className="progress-block">
               <div className="progress-label">
                 <span>Weekly Habits</span>
-                <span>2</span>
+                <span>{weeklyHabits}</span>
               </div>
               <div className="progress-bar">
-                <div className="fill blue-fill" style={{ width: "25%" }}></div>
+                <div className="fill blue-fill" style={{ width: `${(weeklyHabits/totalHabits)*100 || 0}%` }}></div>
               </div>
             </div>
 
             <div className="progress-block">
               <div className="progress-label">
                 <span>Monthly Habits</span>
-                <span>1</span>
+                <span>{monthlyHabits}</span>
               </div>
               <div className="progress-bar">
-                <div className="fill coral-fill" style={{ width: "13%" }}></div>
+                <div className="fill coral-fill" style={{ width: `${(monthlyHabits/totalHabits)*100 || 0}%` }}></div>
               </div>
             </div>
           </div>
@@ -110,15 +108,22 @@ export default function MyHabits() {
           <div className="panel">
             <h2>Weekly Habits</h2>
             <ul className="activity-list">
-              <li>Plan the week every Sunday</li>
-              <li>Clean workspace</li>
+              {habits
+                .filter(h => h.frequency === "Weekly")
+                .map(h => (
+                  <li key={h.id}>{h.title}</li>
+                ))}
             </ul>
           </div>
 
           <div className="panel">
             <h2>Monthly Habits</h2>
             <ul className="activity-list">
-              <li>Review goals and progress</li>
+              {habits
+                .filter(h => h.frequency === "Monthly")
+                .map(h => (
+                  <li key={h.id}>{h.title}</li>
+                ))}
             </ul>
           </div>
         </section>

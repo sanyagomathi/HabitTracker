@@ -15,10 +15,12 @@ import Progress from "./pages/Progress";
 import CalendarPage from "./pages/CalendarPage";
 import Settings from "./pages/Settings";
 import DeleteAccount from "./pages/DeleteAccount";
+import HabitDetail from "./pages/HabitDetail";
 
 export default function App() {
   return (
     <Routes>
+      <Route path="/habits/:id" element={<HabitDetail />} />
       <Route path="/" element={<Splash />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />

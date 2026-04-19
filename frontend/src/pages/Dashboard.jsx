@@ -1,7 +1,17 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 
 export default function Dashboard() {
+  const [habits, setHabits] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:5001/api/habits")
+      .then((res) => res.json())
+      .then((data) => setHabits(data))
+      .catch((err) => console.error("Error fetching habits:", err));
+  }, []);
+
   return (
     <div className="page-wrapper">
       <Navbar />
@@ -23,7 +33,7 @@ export default function Dashboard() {
         <section className="stats-grid">
           <div className="stat-card yellow">
             <h3>Today's Habits</h3>
-            <p>06</p>
+            <p>{habits.length}</p>
           </div>
 
           <div className="stat-card pink">
@@ -46,36 +56,18 @@ export default function Dashboard() {
           <div className="panel large-panel">
             <h2>Today's Habits</h2>
 
-            <Link to="/habits/screentime" className="habit-link">
-              <div className="habit-item">
-                <span>Screentime</span>
-                <span className="tag green">Done</span>
-              </div>
-            </Link>
-
-            <div className="habit-item">
-              <span>Morning Exercise</span>
-              <span className="tag blue">Done</span>
-            </div>
-
-            <div className="habit-item">
-              <span>Read 20 Pages</span>
-              <span className="tag pink-tag">Pending</span>
-            </div>
-
-            <Link to="/habits/meditation" className="habit-link">
-              <div className="habit-item">
-                <span>Meditation</span>
-                <span className="tag yellow-tag">Pending</span>
-              </div>
-            </Link>
-
-            <Link to="/habits/sleep" className="habit-link">
-              <div className="habit-item">
-                <span>Sleep Before 11 PM</span>
-                <span className="tag coral-tag">Pending</span>
-              </div>
-            </Link>
+            {habits.length === 0 ? (
+              <p>No habits added yet.</p>
+            ) : (
+              habits.map((habit) => (
+                <Link to={`/habits/${habit.id}`} className="habit-link" key={habit.id}>
+                  <div className="habit-item">
+                    <span>{habit.title}</span>
+                    <span className="tag pink-tag">Pending</span>
+                  </div>
+                </Link>
+              ))
+            )}
           </div>
 
           <div className="panel side-panel">

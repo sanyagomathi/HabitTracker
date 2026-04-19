@@ -1,67 +1,82 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
 
 export default function Login() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    const email = e.target.querySelector("#email").value;
-    const password = e.target.querySelector("#password").value;
-
     try {
-      const res = await fetch("http://localhost:5001/api/login", {
+      // 1. Logic to check Old Email and Password
+      const response = await fetch("http://localhost:5001/api/login", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-        navigate("/dashboard");
+      if (response.ok) {
+        alert("Login successful!");
+        // Opens the dashboard page upon success
+        navigate("/dashboard"); 
       } else {
-        alert(data.error || "Invalid email or password");
+        alert("Invalid email or password. Please try again.");
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      alert("Server error");
+    } catch (err) {
+      console.error("Login error:", err);
+      alert("Error connecting to the server.");
     }
   };
 
   return (
-    <div className="login-page">
-      <div className="login-container">
-        <div className="login-panel">
-          <h1>Welcome Back!</h1>
-          <span className="subtitle">Ready to crush your goals?</span>
-
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="email">Email Address</label>
-              <input type="email" id="email" placeholder="hello@example.com" required />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <input type="password" id="password" placeholder="••••••••" required />
-            </div>
-
-            <button type="submit" className="login-btn">
-              Log In →
-            </button>
-          </form>
-
-          <div className="footer-links">
-            <p>
-              New here? <Link to="/Signup">Create an account</Link>
-            </p>
-          </div>
+    <div className="page-wrapper">
+      <section className="hero-card">
+        <div>
+          <p className="small-title">WELCOME BACK</p>
+          <h1>Login</h1>
+          <p className="hero-text">Verify your details to access your dashboard.</p>
         </div>
-      </div>
+      </section>
+
+      <section className="panel">
+        <h2>Login</h2>
+        <form onSubmit={handleLogin}>
+          <label>Email</label>
+          <input 
+            type="email" 
+            placeholder="Enter your email" 
+            required 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+          />
+
+          <label>Password</label>
+          <input 
+            type="password" 
+            placeholder="Enter your password" 
+            required 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+          />
+
+          <div className="buttons">
+            <button type="submit" className="primary-btn">Log In →</button>
+          </div>
+        </form>
+
+        {/* 2. Option to open the sign up / register page */}
+        <p style={{ marginTop: "20px", fontWeight: 600 }}>
+          Don't have an account?{" "}
+          <Link to="/rsignup" style={{ textDecoration: "underline" }}>
+            Register here
+          </Link>
+        </p>
+      </section>
     </div>
   );
 }
