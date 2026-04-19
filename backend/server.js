@@ -33,6 +33,8 @@ const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url, true);
   const path = parsed.pathname;
 
+// 200 -> success with content, 204 -> success with no content
+
   // CORS preflight
   if (req.method === "OPTIONS") {
     send(res, 204, {});
@@ -41,7 +43,7 @@ const server = http.createServer(async (req, res) => {
 
   /* ---------- TEST ---------- */
   if (req.method === "GET" && path === "/") {
-    send(res, 200, { message: "Backend running 🚀" });
+    send(res, 200, { message: "Backend running!" });
     return;
   }
 
@@ -118,6 +120,66 @@ const server = http.createServer(async (req, res) => {
       (err, result) => {
         if (err) return send(res, 500, { error: err });
         send(res, 200, result);
+      }
+    );
+    return;
+  }
+
+  /* ---------- LOGIN ---------- */
+
+  if (req.method === "POST" && path === "/api/login") {
+  const body = await getBody(req);
+  const { email, password } = body;
+
+  if (!email || !password) {
+    send(res, 400, { error: "Email and password required" });
+    return;
+  }
+
+  const sql = "SELECT * FROM users WHERE email = ? AND password = ?";
+
+  db.query(sql, [email, password], (err, result) => {
+    if (err) {
+      send(res, 500, { error: "Database error" });
+      return;
+    }
+
+    if (result.length === 0) {
+      send(res, 401, { error: "Invalid email or password" });
+      return;
+    }
+
+    send(res, 200, {
+      message: "Login successful",
+      user: {
+        id: result[0].id,
+        name: result[0].name,
+        email: result[0].email,
+      },
+    });
+  });
+
+  return;
+}
+  /* ---------- SIGNUP ---------- */
+
+  if (req.method === "POST" && path === "/api/users") {
+    const body = await getBody(req);
+
+    const { name, email, password } = body;
+
+    const sql = `
+      INSERT INTO users (name, email, password)
+      VALUES (?, ?, ?)
+    `;
+
+    db.query(
+      sql,
+      [name, email, password],
+      (err, result) => {
+        if (err) return send(res, 500, { error: err });
+
+        send(res, 201, { message: "User created" });
       }
     );
     return;

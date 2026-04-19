@@ -1,11 +1,35 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate("/dashboard");
+
+    const email = e.target.querySelector("#email").value;
+    const password = e.target.querySelector("#password").value;
+
+    try {
+      const res = await fetch("http://localhost:5001/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+        navigate("/dashboard");
+      } else {
+        alert(data.error || "Invalid email or password");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Server error");
+    }
   };
 
   return (
@@ -33,7 +57,7 @@ export default function Login() {
 
           <div className="footer-links">
             <p>
-              New here? <a href="#">Create an account</a>
+              New here? <Link to="/Signup">Create an account</Link>
             </p>
           </div>
         </div>

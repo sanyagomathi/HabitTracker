@@ -51,7 +51,6 @@ export default function Signup() {
 
   return (
     <div className="page-wrapper">
-      <Navbar />
 
       {/* HERO */}
       <section className="hero-card">
