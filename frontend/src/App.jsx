@@ -20,6 +20,11 @@ import HabitDetail from "./pages/HabitDetail";
 export default function App() {
   return (
     <Routes>
+      <Route path="/habits/workspace/:id" element={<OrganizeWorkspace />} />
+      <Route path="/habits/expenses/:id" element={<TrackExpenses />} />
+      <Route path="/habits/meditation/:id" element={<Meditation />} />
+      <Route path="/habits/sleep/:id" element={<Sleep />} />
+      <Route path="/habits/screentime/:id" element={<Screentime />} />
       <Route path="/habits/:id" element={<HabitDetail />} />
       <Route path="/" element={<Splash />} />
       <Route path="/signup" element={<Signup />} />
@@ -30,12 +35,7 @@ export default function App() {
       <Route path="/profile" element={<Profile />} />
       <Route path="/progress" element={<Progress />} />
       <Route path="/calendar" element={<CalendarPage />} />
-      <Route path="/settings" element={<Settings />} />
-      <Route path="/habits/sleep" element={<Sleep />} />
-      <Route path="/habits/meditation" element={<Meditation />} />
-      <Route path="/habits/expenses" element={<TrackExpenses />} />
-      <Route path="/habits/screentime" element={<Screentime />} />
-      <Route path="/habits/workspace" element={<OrganizeWorkspace />} />
+      <Route path="/settings" element={<Settings />} /> 
       <Route path="/delete-account" element={<DeleteAccount />} />
     </Routes>
   );

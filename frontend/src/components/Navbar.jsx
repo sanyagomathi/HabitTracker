@@ -28,7 +28,7 @@ export default function Navbar() {
       </nav>
 
       <div className="profile-pill">
-        <Link to="/profile">AD</Link>
+        <Link to="/profile">USER</Link>
       </div>
     </header>
   );

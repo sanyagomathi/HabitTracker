@@ -4,6 +4,21 @@ import Navbar from "../components/Navbar";
 
 export default function Dashboard() {
   const [habits, setHabits] = useState([]);
+  const [allEntries, setAllEntries] = useState([]);
+
+const getHabitRoute = (habit) => {
+  const templateRoutes = {
+    meditation: `/habits/meditation/${habit.id}`,
+    sleep: `/habits/sleep/${habit.id}`,
+    screentime: `/habits/screentime/${habit.id}`,
+    workspace: `/habits/workspace/${habit.id}`,
+    expenses: `/habits/expenses/${habit.id}`,
+  };
+
+  return habit.template_key && templateRoutes[habit.template_key]
+    ? templateRoutes[habit.template_key]
+    : `/habits/${habit.id}`;
+};
 
   useEffect(() => {
     fetch("http://localhost:5001/api/habits")
@@ -11,6 +26,36 @@ export default function Dashboard() {
       .then((data) => setHabits(data))
       .catch((err) => console.error("Error fetching habits:", err));
   }, []);
+
+  useEffect(() => {
+    if (habits.length === 0) {
+      return;
+    }
+
+    Promise.all(
+      habits.map((habit) =>
+        fetch(`http://localhost:5001/api/entries/${habit.id}`)
+          .then((res) => res.json())
+          .catch(() => [])
+      )
+    )
+      .then((results) => {
+        setAllEntries(results.flat());
+      })
+      .catch((err) => console.error("Error fetching entries:", err));
+  }, [habits]);
+
+  const today = new Date().toISOString().split("T")[0];
+
+  const completedToday = allEntries.filter(
+    (entry) =>
+      entry.entry_date === today &&
+      ["Done", "On Time", "Good", "Within Budget"].includes(entry.status)
+  ).length;
+
+  const completionRate = habits.length
+    ? Math.round((completedToday / habits.length) * 100)
+    : 0;
 
   return (
     <div className="page-wrapper">
@@ -38,7 +83,7 @@ export default function Dashboard() {
 
           <div className="stat-card pink">
             <h3>Completed</h3>
-            <p>04</p>
+            <p>{completedToday}</p>
           </div>
 
           <div className="stat-card coral">
@@ -48,7 +93,7 @@ export default function Dashboard() {
 
           <div className="stat-card purple">
             <h3>Completion Rate</h3>
-            <p>78%</p>
+            <p>{completionRate}%</p>
           </div>
         </section>
 
@@ -60,7 +105,11 @@ export default function Dashboard() {
               <p>No habits added yet.</p>
             ) : (
               habits.map((habit) => (
-                <Link to={`/habits/${habit.id}`} className="habit-link" key={habit.id}>
+                <Link
+                  to={getHabitRoute(habit)}
+                  className="habit-link"
+                  key={habit.id}
+                >
                   <div className="habit-item">
                     <span>{habit.title}</span>
                     <span className="tag pink-tag">Pending</span>

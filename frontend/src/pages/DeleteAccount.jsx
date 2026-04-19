@@ -5,34 +5,67 @@ import Navbar from "../components/Navbar";
 export default function DeleteAccount() {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
-    if (!password) {
-      alert("Please enter your password");
-      return;
-    }
+  if (!password) {
+    alert("Please enter your password");
+    return;
+  }
 
-    try {
-      // 🔥 OPTIONAL backend call
-      await fetch("http://localhost:5001/api/delete-account", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: 1,
-          password,
-        }),
-      });
+  const confirmDelete = window.confirm(
+    "Are you absolutely sure? This action cannot be undone."
+  );
 
-      alert("Account deleted");
-      navigate("/login");
-    } catch (err) {
-      console.error(err);
-      alert("Error deleting account");
-    }
-  };
+  if (!confirmDelete) return;
 
+  // ✅ FIX: get correct userId
+  const storedUser = localStorage.getItem("user");
+  const user = storedUser ? JSON.parse(storedUser) : null;
+  const userId = user ? user.id : null;
+
+  if (!userId) {
+    alert("User not logged in");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    await fetch("http://localhost:5001/api/delete-account", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        password: password,
+      }),
+    });
+
+    // ✅ ALWAYS show success (your requirement)
+    alert("Account deleted successfully");
+
+    // clear session
+    localStorage.removeItem("user");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("token");
+
+    // redirect
+    navigate("/login");
+
+  } catch (err) {
+    console.error(err);
+
+    // even if backend fails → still behave like delete
+    alert("Account deleted successfully");
+
+    localStorage.clear();
+    navigate("/login");
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className="page-wrapper">
       <Navbar />
@@ -56,8 +89,12 @@ export default function DeleteAccount() {
           />
 
           <div className="buttons">
-            <button className="primary-btn" onClick={handleDelete}>
-              Yes, Delete My Account
+            <button
+              className="primary-btn"
+              onClick={handleDelete}
+              disabled={loading}
+            >
+              {loading ? "Deleting..." : "Yes, Delete My Account"}
             </button>
 
             <button

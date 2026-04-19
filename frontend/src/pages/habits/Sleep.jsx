@@ -1,17 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend
-} from "chart.js";
-import { Line } from "react-chartjs-2";
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
+import { useParams } from "react-router-dom";
+import { getTodayDate, calculateStreak, getTodayEntry } from "../../utils/habitTracking";
 
 function formatTime(time24) {
   if (!time24) return "";
@@ -23,16 +13,43 @@ function formatTime(time24) {
 }
 
 export default function Sleep() {
+  const { id } = useParams();
   const [target, setTarget] = useState("22:30");
   const [newTarget, setNewTarget] = useState("22:30");
-  const [todaySleep, setTodaySleep] = useState("23:20");
+  const [todaySleep, setTodaySleep] = useState("");
   const [status, setStatus] = useState("Late");
   const [showPopup, setShowPopup] = useState(false);
   const [sleepInput, setSleepInput] = useState("");
   const [routineQuality, setRoutineQuality] = useState("Excellent");
   const [reflection, setReflection] = useState("");
-  const [completedDays, setCompletedDays] = useState([1, 3, 4, 8, 11, 15, 19, 23]);
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [streak, setStreak] = useState(0);
+
+  const fetchEntries = async () => {
+    try {
+      const res = await fetch(`http://localhost:5001/api/entries/${id}`);
+      const data = await res.json();
+
+      const todayEntry = getTodayEntry(data);
+      if (todayEntry) {
+        setTodaySleep(todayEntry.value || "");
+        setSleepInput(todayEntry.value || "");
+        setStatus(todayEntry.status || "Late");
+        setReflection(todayEntry.notes || "");
+      } else {
+        setTodaySleep("");
+        setSleepInput("");
+        setStatus("Late");
+        setReflection("");
+      }
+
+      setStreak(calculateStreak(data));
+    } catch (err) {
+      console.error("Error fetching entries:", err);
+    }
+  };
+
+  useEffect(() => {
+  }, [id]);
 
   const saveTarget = () => {
     if (!newTarget) return;
@@ -40,41 +57,42 @@ export default function Sleep() {
     setShowPopup(false);
   };
 
-  const saveDay = () => {
+  const saveDay = async () => {
     if (!sleepInput) {
       alert("Enter your sleep time");
       return;
     }
 
-    setTodaySleep(sleepInput);
-    const today = new Date().getDate();
+    const newStatus = sleepInput <= target ? "On Time" : "Late";
+    const notes = `Routine: ${routineQuality} | ${reflection}`;
 
-    if (sleepInput <= target) {
-      setStatus("On Time");
-      if (!completedDays.includes(today)) {
-        setCompletedDays([...completedDays, today]);
+    try {
+      const res = await fetch("http://localhost:5001/api/entries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          habit_id: id,
+          entry_date: getTodayDate(),
+          value: sleepInput,
+          status: newStatus,
+          notes
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Failed to save entry");
+        return;
       }
-    } else {
-      setStatus("Late");
+
+      await fetchEntries();
+    } catch (err) {
+      console.error("Error saving entry:", err);
+      alert("Server error");
     }
-  };
-
-  const month = currentDate.getMonth();
-  const year = currentDate.getFullYear();
-  const monthYear = currentDate.toLocaleString("default", { month: "long" }) + " " + year;
-  const firstDay = new Date(year, month, 1).getDay();
-  const lastDate = new Date(year, month + 1, 0).getDate();
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-  const chartData = {
-    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-    datasets: [
-      {
-        label: "Sleep Before Target Trend",
-        data: [23.4, 22.9, 23.1, 22.7],
-        tension: 0.4
-      }
-    ]
   };
 
   return (
@@ -103,7 +121,7 @@ export default function Sleep() {
 
         <div className="stat-card coral">
           <h3>Streak</h3>
-          <p>8 days</p>
+          <p>{streak} days</p>
         </div>
       </div>
 
@@ -114,42 +132,14 @@ export default function Sleep() {
       </div>
 
       <div className="panel">
-        <h2>Calendar</h2>
-
-        <div className="calendar-header">
-          <button onClick={() => setCurrentDate(new Date(year, month - 1, 1))}>⬅</button>
-          <h3>{monthYear}</h3>
-          <button onClick={() => setCurrentDate(new Date(year, month + 1, 1))}>➡</button>
-        </div>
-
-        <div className="calendar-grid">
-          {days.map((day) => (
-            <div key={day} className="day-name">{day}</div>
-          ))}
-
-          {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={`empty-${i}`}></div>
-          ))}
-
-          {Array.from({ length: lastDate }, (_, i) => {
-            const day = i + 1;
-            return (
-              <div
-                key={day}
-                className={`day-box ${completedDays.includes(day) ? "done" : ""}`}
-              >
-                {day}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="panel">
         <h2>Daily Entry</h2>
 
         <label>What time did you sleep?</label>
-        <input type="time" value={sleepInput} onChange={(e) => setSleepInput(e.target.value)} />
+        <input
+          type="time"
+          value={sleepInput}
+          onChange={(e) => setSleepInput(e.target.value)}
+        />
 
         <label>Night Routine Quality</label>
         <select value={routineQuality} onChange={(e) => setRoutineQuality(e.target.value)}>
@@ -166,19 +156,20 @@ export default function Sleep() {
           placeholder="What helped or delayed your sleep?"
         ></textarea>
 
-        <button className="primary-btn" onClick={saveDay}>Save Day</button>
-      </div>
-
-      <div className="panel">
-        <h2>Monthly Trend</h2>
-        <Line data={chartData} />
+        <button className="primary-btn" onClick={saveDay}>
+          Save Day
+        </button>
       </div>
 
       {showPopup && (
         <div className="popup" style={{ display: "flex" }} onClick={() => setShowPopup(false)}>
           <div className="popup-box" onClick={(e) => e.stopPropagation()}>
             <h3>Set Your X PM Target</h3>
-            <input type="time" value={newTarget} onChange={(e) => setNewTarget(e.target.value)} />
+            <input
+              type="time"
+              value={newTarget}
+              onChange={(e) => setNewTarget(e.target.value)}
+            />
             <br /><br />
             <button className="primary-btn" onClick={saveTarget}>Save</button>
           </div>

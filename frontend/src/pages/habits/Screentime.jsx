@@ -1,72 +1,90 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend
-} from "chart.js";
-import { Line } from "react-chartjs-2";
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
+import { useParams } from "react-router-dom";
+import { getTodayDate, calculateStreak, getTodayEntry } from "../../utils/habitTracking";
 
 export default function Screentime() {
+  const { id } = useParams();
+
   const [target, setTarget] = useState(3);
   const [newTarget, setNewTarget] = useState(3);
-  const [todayTime, setTodayTime] = useState(10);
+  const [todayTime, setTodayTime] = useState(0);
   const [status, setStatus] = useState("Exceeded");
   const [showPopup, setShowPopup] = useState(false);
   const [timeInput, setTimeInput] = useState("");
   const [usage, setUsage] = useState("Study");
   const [reflection, setReflection] = useState("");
-  const [completedDays, setCompletedDays] = useState([2, 5, 7, 10, 14, 18, 22]);
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [streak, setStreak] = useState(0);
+
+  const fetchEntries = async () => {
+    try {
+      const res = await fetch(`http://localhost:5001/api/entries/${id}`);
+      const data = await res.json();
+
+      const todayEntry = getTodayEntry(data);
+      if (todayEntry) {
+        setTodayTime(Number(todayEntry.value) || 0);
+        setTimeInput(todayEntry.value || "");
+        setStatus(todayEntry.status || "Exceeded");
+        setReflection(todayEntry.notes || "");
+      } else {
+        setTodayTime(0);
+        setTimeInput("");
+        setStatus("Exceeded");
+        setReflection("");
+      }
+
+      setStreak(calculateStreak(data));
+    } catch (err) {
+      console.error("Error fetching entries:", err);
+    }
+  };
+
+  useEffect(() => {
+  }, [id]);
 
   const saveTarget = () => {
     setTarget(Number(newTarget));
     setShowPopup(false);
   };
 
-  const saveDay = () => {
+  const saveDay = async () => {
     if (timeInput === "") {
       alert("Enter screen time");
       return;
     }
 
     const time = Number(timeInput);
-    setTodayTime(time);
+    const newStatus = time <= target ? "Good" : "Exceeded";
+    const notes = `Usage: ${usage} | ${reflection}`;
 
-    const today = new Date().getDate();
+    try {
+      const res = await fetch("http://localhost:5001/api/entries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          habit_id: id,
+          entry_date: getTodayDate(),
+          value: time,
+          status: newStatus,
+          notes
+        })
+      });
 
-    if (time <= target) {
-      if (!completedDays.includes(today)) {
-        setCompletedDays([...completedDays, today]);
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Failed to save entry");
+        return;
       }
-      setStatus("Good");
-    } else {
-      setStatus("Exceeded");
+
+      await fetchEntries();
+    } catch (err) {
+      console.error("Error saving entry:", err);
+      alert("Server error");
     }
-  };
-
-  const month = currentDate.getMonth();
-  const year = currentDate.getFullYear();
-  const monthYear = currentDate.toLocaleString("default", { month: "long" }) + " " + year;
-  const firstDay = new Date(year, month, 1).getDay();
-  const lastDate = new Date(year, month + 1, 0).getDate();
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-  const chartData = {
-    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-    datasets: [
-      {
-        label: "Screen Time Trend",
-        data: [5, 4, 6, 3],
-        tension: 0.4
-      }
-    ]
   };
 
   return (
@@ -95,7 +113,7 @@ export default function Screentime() {
 
         <div className="stat-card coral">
           <h3>Streak</h3>
-          <p>12 days</p>
+          <p>{streak} days</p>
         </div>
       </div>
 
@@ -106,42 +124,14 @@ export default function Screentime() {
       </div>
 
       <div className="panel">
-        <h2>Calendar</h2>
-
-        <div className="calendar-header">
-          <button onClick={() => setCurrentDate(new Date(year, month - 1, 1))}>⬅</button>
-          <h3>{monthYear}</h3>
-          <button onClick={() => setCurrentDate(new Date(year, month + 1, 1))}>➡</button>
-        </div>
-
-        <div className="calendar-grid">
-          {days.map((day) => (
-            <div key={day} className="day-name">{day}</div>
-          ))}
-
-          {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={`empty-${i}`}></div>
-          ))}
-
-          {Array.from({ length: lastDate }, (_, i) => {
-            const day = i + 1;
-            return (
-              <div
-                key={day}
-                className={`day-box ${completedDays.includes(day) ? "done" : ""}`}
-              >
-                {day}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="panel">
         <h2>Daily Entry</h2>
 
         <label>Screen Time (hrs)</label>
-        <input type="number" value={timeInput} onChange={(e) => setTimeInput(e.target.value)} />
+        <input
+          type="number"
+          value={timeInput}
+          onChange={(e) => setTimeInput(e.target.value)}
+        />
 
         <label>Main Usage</label>
         <select value={usage} onChange={(e) => setUsage(e.target.value)}>
@@ -152,21 +142,25 @@ export default function Screentime() {
         </select>
 
         <label>Reflection</label>
-        <textarea value={reflection} onChange={(e) => setReflection(e.target.value)}></textarea>
+        <textarea
+          value={reflection}
+          onChange={(e) => setReflection(e.target.value)}
+        ></textarea>
 
-        <button className="primary-btn" onClick={saveDay}>Save Day</button>
-      </div>
-
-      <div className="panel">
-        <h2>Monthly Trend</h2>
-        <Line data={chartData} />
+        <button className="primary-btn" onClick={saveDay}>
+          Save Day
+        </button>
       </div>
 
       {showPopup && (
         <div className="popup" style={{ display: "flex" }} onClick={() => setShowPopup(false)}>
           <div className="popup-box" onClick={(e) => e.stopPropagation()}>
             <h3>Set Target</h3>
-            <input type="number" value={newTarget} onChange={(e) => setNewTarget(e.target.value)} />
+            <input
+              type="number"
+              value={newTarget}
+              onChange={(e) => setNewTarget(e.target.value)}
+            />
             <br /><br />
             <button className="primary-btn" onClick={saveTarget}>Save</button>
           </div>

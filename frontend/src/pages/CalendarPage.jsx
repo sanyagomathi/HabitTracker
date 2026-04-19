@@ -4,8 +4,8 @@ import Navbar from "../components/Navbar";
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  const completedDays = [2, 4, 5, 7, 10, 12, 15, 18, 21, 23, 26];
-  const partialDays = [3, 8, 14, 20, 27];
+  const completedDays = [18, 19, 20];
+  const partialDays = [ ];
 
   const month = currentDate.getMonth();
   const year = currentDate.getFullYear();

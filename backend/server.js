@@ -7,23 +7,35 @@ const PORT = process.env.PORT || 5000;
 
 /* ---------- HELPERS ---------- */
 
-// Send JSON response
 function send(res, status, data) {
   res.writeHead(status, {
     "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "http://localhost:5174",
+    "Access-Control-Allow-Origin": "http://localhost:5173",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
   });
   res.end(JSON.stringify(data));
 }
 
-// Read POST body
 function getBody(req) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let body = "";
-    req.on("data", chunk => body += chunk.toString());
-    req.on("end", () => resolve(body ? JSON.parse(body) : {}));
+
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+
+    req.on("end", () => {
+      try {
+        resolve(body ? JSON.parse(body) : {});
+      } catch (err) {
+        reject(err);
+      }
+    });
+
+    req.on("error", (err) => {
+      reject(err);
+    });
   });
 }
 
@@ -33,9 +45,6 @@ const server = http.createServer(async (req, res) => {
   const parsed = url.parse(req.url, true);
   const path = parsed.pathname;
 
-// 200 -> success with content, 204 -> success with no content
-
-  // CORS preflight
   if (req.method === "OPTIONS") {
     send(res, 204, {});
     return;
@@ -58,55 +67,94 @@ const server = http.createServer(async (req, res) => {
 
   /* ---------- ADD HABIT ---------- */
   if (req.method === "POST" && path === "/api/habits") {
-    const body = await getBody(req);
+    try {
+      const body = await getBody(req);
+      const { user_id, title, category, frequency, target, template_key } = body;
 
-    const { user_id, title, category, frequency, target } = body;
-
-    if (!title) {
-      send(res, 400, { error: "Title required" });
-      return;
-    }
-
-    const sql = `
-      INSERT INTO habits (user_id, title, category, frequency, target)
-      VALUES (?, ?, ?, ?, ?)
-    `;
-
-    db.query(
-      sql,
-      [user_id || 1, title, category, frequency, target],
-      (err, result) => {
-        if (err) return send(res, 500, { error: err });
-
-        send(res, 201, {
-          message: "Habit added",
-          id: result.insertId,
-        });
+      if (!title) {
+        send(res, 400, { error: "Title required" });
+        return;
       }
-    );
+
+      const sql = `
+        INSERT INTO habits (user_id, title, category, frequency, target, template_key)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `;
+
+      db.query(
+        sql,
+        [user_id || 1, title, category, frequency, target, template_key || null],
+        (err, result) => {
+          if (err) return send(res, 500, { error: err });
+
+          send(res, 201, {
+            message: "Habit added",
+            id: result.insertId,
+          });
+        }
+      );
+    } catch (err) {
+      console.error("POST /api/habits ERROR:", err);
+      send(res, 500, { error: "Server failed to parse request body" });
+    }
     return;
   }
 
   /* ---------- SAVE ENTRY ---------- */
   if (req.method === "POST" && path === "/api/entries") {
-    const body = await getBody(req);
+    try {
+      const body = await getBody(req);
 
-    const { habit_id, entry_date, value, status, notes } = body;
+      console.log("POST /api/entries hit");
+      console.log("RAW BODY OBJECT:", body);
 
-    const sql = `
-      INSERT INTO habit_entries (habit_id, entry_date, value, status, notes)
-      VALUES (?, ?, ?, ?, ?)
-    `;
+      const habit_id = body.habit_id;
+      const entry_date = body.entry_date;
+      const value = body.value;
+      const status = body.status;
+      const notes = body.notes;
 
-    db.query(
-      sql,
-      [habit_id, entry_date, value, status, notes],
-      (err, result) => {
-        if (err) return send(res, 500, { error: err });
+      console.log("habit_id:", habit_id);
+      console.log("entry_date:", entry_date);
 
-        send(res, 201, { message: "Entry saved" });
+      if (
+        habit_id === undefined ||
+        habit_id === null ||
+        entry_date === undefined ||
+        entry_date === null ||
+        entry_date === ""
+      ) {
+        send(res, 400, { error: "habit_id and entry_date are required" });
+        return;
       }
-    );
+
+      const sql = `
+        INSERT INTO habit_entries (habit_id, entry_date, value, status, notes)
+        VALUES (?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+          value = VALUES(value),
+          status = VALUES(status),
+          notes = VALUES(notes)
+      `;
+
+      db.query(
+        sql,
+        [habit_id, entry_date, value ?? null, status ?? null, notes ?? null],
+        (err) => {
+          if (err) {
+            console.error("DB ERROR:", err);
+            send(res, 500, { error: "Database error", details: err.message });
+            return;
+          }
+
+          send(res, 201, { message: "Entry saved" });
+        }
+      );
+    } catch (err) {
+      console.error("POST /api/entries ERROR:", err);
+      send(res, 500, { error: "Server failed to parse request body" });
+    }
+
     return;
   }
 
@@ -126,72 +174,74 @@ const server = http.createServer(async (req, res) => {
   }
 
   /* ---------- LOGIN ---------- */
-
   if (req.method === "POST" && path === "/api/login") {
-  const body = await getBody(req);
-  const { email, password } = body;
+    try {
+      const body = await getBody(req);
+      const { email, password } = body;
 
-  if (!email || !password) {
-    send(res, 400, { error: "Email and password required" });
-    return;
-  }
-
-  const sql = "SELECT * FROM users WHERE email = ? AND password = ?";
-
-  db.query(sql, [email, password], (err, result) => {
-    if (err) {
-      send(res, 500, { error: "Database error" });
-      return;
-    }
-
-    if (result.length === 0) {
-      send(res, 401, { error: "Invalid email or password" });
-      return;
-    }
-
-    send(res, 200, {
-      message: "Login successful",
-      user: {
-        id: result[0].id,
-        name: result[0].name,
-        email: result[0].email,
-      },
-    });
-  });
-
-  return;
-}
-  /* ---------- SIGNUP ---------- */
-
-  if (req.method === "POST" && path === "/api/users") {
-    const body = await getBody(req);
-
-    const { name, email, password } = body;
-
-    const sql = `
-      INSERT INTO users (name, email, password)
-      VALUES (?, ?, ?)
-    `;
-
-    db.query(
-      sql,
-      [name, email, password],
-      (err, result) => {
-        if (err) return send(res, 500, { error: err });
-
-        send(res, 201, { message: "User created" });
+      if (!email || !password) {
+        send(res, 400, { error: "Email and password required" });
+        return;
       }
-    );
+
+      const sql = "SELECT * FROM users WHERE email = ? AND password = ?";
+
+      db.query(sql, [email, password], (err, result) => {
+        if (err) {
+          send(res, 500, { error: "Database error" });
+          return;
+        }
+
+        if (result.length === 0) {
+          send(res, 401, { error: "Invalid email or password" });
+          return;
+        }
+
+        send(res, 200, {
+          message: "Login successful",
+          user: {
+            id: result[0].id,
+            name: result[0].name,
+            email: result[0].email,
+          },
+        });
+      });
+    } catch (err) {
+      console.error("POST /api/login ERROR:", err);
+      send(res, 500, { error: "Server failed to parse request body" });
+    }
+
     return;
   }
 
-  if (req.method === "GET" && path.startsWith("/api/habits/")) {
-  const id = path.split("/").pop();
+  /* ---------- SIGNUP ---------- */
+  if (req.method === "POST" && path === "/api/users") {
+    try {
+      const body = await getBody(req);
+      const { name, email, password } = body;
 
-  db.query(
-    "SELECT * FROM habits WHERE id = ?",
-    [id],
-    (err, result) => {
+      const sql = `
+        INSERT INTO users (name, email, password)
+        VALUES (?, ?, ?)
+      `;
+
+      db.query(sql, [name, email, password], (err) => {
+        if (err) return send(res, 500, { error: err });
+        send(res, 201, { message: "User created" });
+      });
+    } catch (err) {
+      console.error("POST /api/users ERROR:", err);
+      send(res, 500, { error: "Server failed to parse request body" });
+    }
+
+    return;
+  }
+
+  /* ---------- GET SINGLE HABIT ---------- */
+  if (req.method === "GET" && path.startsWith("/api/habits/")) {
+    const id = path.split("/").pop();
+
+    db.query("SELECT * FROM habits WHERE id = ?", [id], (err, result) => {
       if (err) {
         send(res, 500, { error: "Database error" });
         return;
@@ -203,10 +253,9 @@ const server = http.createServer(async (req, res) => {
       }
 
       send(res, 200, result[0]);
-    }
-  );
-  return;
-}
+    });
+    return;
+  }
 
   /* ---------- NOT FOUND ---------- */
   send(res, 404, { error: "Route not found" });

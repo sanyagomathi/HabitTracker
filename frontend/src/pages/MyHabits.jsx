@@ -18,6 +18,19 @@ export default function MyHabits() {
   const weeklyHabits = habits.filter(h => h.frequency === "Weekly").length;
   const monthlyHabits = habits.filter(h => h.frequency === "Monthly").length;
 
+const getHabitRoute = (habit) => {
+  const templateRoutes = {
+    meditation: `/habits/meditation/${habit.id}`,
+    sleep: `/habits/sleep/${habit.id}`,
+    screentime: `/habits/screentime/${habit.id}`,
+    workspace: `/habits/workspace/${habit.id}`,
+    expenses: `/habits/expenses/${habit.id}`,
+  };
+
+  return habit.template_key && templateRoutes[habit.template_key]
+    ? templateRoutes[habit.template_key]
+    : `/habits/${habit.id}`;
+};
   return (
     <div className="page-wrapper">
       <Navbar />
@@ -46,7 +59,7 @@ export default function MyHabits() {
               ) : (
                 habits.map((habit) => (
                 <li key={habit.id}>
-                  <Link to={`/habits/${habit.id}`} className="habit-item habit-link-item">
+                 <Link to={getHabitRoute(habit)} className="habit-item habit-link-item">
                     <span>{habit.title}</span>
                     <span className="tag green">
                       {habit.frequency || "Daily"}

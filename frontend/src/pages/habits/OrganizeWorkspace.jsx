@@ -1,24 +1,68 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
+import { useParams } from "react-router-dom";
+import { getTodayDate, calculateStreak, getTodayEntry } from "../../utils/habitTracking";
 
 export default function OrganizeWorkspace() {
+  const { id } = useParams();
   const [status, setStatus] = useState("Pending");
-  const [streak, setStreak] = useState(5);
+  const [streak, setStreak] = useState(0);
   const [done, setDone] = useState("Yes");
   const [reflection, setReflection] = useState("");
 
-  const saveDay = () => {
-    const today = new Date().getDate();
+  const fetchEntries = async () => {
+    try {
+      const res = await fetch(`http://localhost:5001/api/entries/${id}`);
+      const data = await res.json();
 
-    if (done === "Yes") {
-      setStatus("Done");
-      setStreak((prev) => prev + 1);
-    } else {
-      setStatus("Pending");
-      setStreak(0);
+      const todayEntry = getTodayEntry(data);
+      if (todayEntry) {
+        setStatus(todayEntry.status || "Pending");
+        setDone(todayEntry.value || "Yes");
+        setReflection(todayEntry.notes || "");
+      } else {
+        setStatus("Pending");
+      }
+
+      setStreak(calculateStreak(data));
+    } catch (err) {
+      console.error("Error fetching entries:", err);
     }
+  };
 
-    console.log("Saved:", { done, reflection, today });
+  useEffect(() => {
+  }, [id]);
+
+  const saveDay = async () => {
+    const newStatus = done === "Yes" ? "Done" : "Pending";
+
+    try {
+      const res = await fetch("http://localhost:5001/api/entries", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          habit_id: id,
+          entry_date: getTodayDate(),
+          value: done,
+          status: newStatus,
+          notes: reflection
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Failed to save entry");
+        return;
+      }
+
+      await fetchEntries();
+    } catch (err) {
+      console.error("Error saving entry:", err);
+      alert("Server error");
+    }
   };
 
   return (
@@ -54,7 +98,7 @@ export default function OrganizeWorkspace() {
         <textarea
           value={reflection}
           onChange={(e) => setReflection(e.target.value)}
-        ></textarea>
+        />
 
         <button className="primary-btn" onClick={saveDay}>
           Save Day
